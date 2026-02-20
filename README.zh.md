@@ -14,7 +14,7 @@
 
 Obsidian vault 就是一个文件夹，里面全是 `.md` 文件。这意味着 Claude Code 等 AI 工具可以**直接读写你的知识库**：
 
-> **零 API。** &ensp; **零插件。** &ensp; **零中间层。**
+`零 API` &ensp; `零插件` &ensp; `零中间层`
 
 ```bash
 # Claude Code 天然能做这些事
@@ -139,7 +139,15 @@ git clone git@github.com:用户名/仓库.git
 ```bash
 bash scripts/sync.sh                        # 手动同步
 tail -20 ~/.cc-md/sync.log                  # 查看日志
-launchctl list | grep cc-md                 # 检查定时任务
+launchctl list | grep cc-md                 # 检查定时任务（有输出 = 运行中，空 = 未运行）
+```
+
+**改了 vault 名字？** 不需要任何操作。sync.sh 会自动扫描 iCloud 目录，找到有 `.git` 的 vault。
+
+**任务没在运行？** 重新加载：
+
+```bash
+launchctl load ~/Library/LaunchAgents/com.cc-md.sync.plist
 ```
 
 ## 卸载

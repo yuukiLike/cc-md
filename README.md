@@ -14,7 +14,7 @@ Local-first Obsidian multi-device sync. Zero cost. Zero signup. Zero maintenance
 
 Obsidian vault is just a folder of `.md` files. This means AI tools like Claude Code can **read and write your knowledge base directly**:
 
-> **No API.** &ensp; **No plugins.** &ensp; **No middleware.**
+`No API` &ensp; `No plugins` &ensp; `No middleware`
 
 ```bash
 # Claude Code works with your vault natively
@@ -139,7 +139,15 @@ This approach: iCloud for Apple ecosystem sync, Git for cross-platform + version
 ```bash
 bash scripts/sync.sh                        # manual sync
 tail -20 ~/.cc-md/sync.log                  # view logs
-launchctl list | grep cc-md                 # check scheduled task
+launchctl list | grep cc-md                 # check if sync task is running (output = running, empty = stopped)
+```
+
+**Vault renamed?** No action needed. sync.sh auto-discovers the vault by scanning for `.git` in the iCloud Obsidian directory.
+
+**Task not running?** Reload it:
+
+```bash
+launchctl load ~/Library/LaunchAgents/com.cc-md.sync.plist
 ```
 
 ## Uninstall

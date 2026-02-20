@@ -1,14 +1,17 @@
 #!/bin/bash
 # cc-md sync script
 # 将 iCloud 中 Obsidian vault 的变更自动同步到 Git 远程仓库
+#
+# vault 查找策略（按优先级）：
+#   1. 环境变量 CC_MD_VAULT_DIR（install.sh 设置的）
+#   2. ~/.cc-md/vault-path 文件里记录的路径
+#   3. 自动扫描 iCloud Obsidian 目录，找到第一个有 .git 的 vault
+# 这意味着即使你重命名了 vault，第 3 步也能自动找到它。
 
 set -euo pipefail
 
-# ========== 配置 ==========
-# Obsidian vault 路径（iCloud 中）
-VAULT_DIR="${CC_MD_VAULT_DIR:-$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/vault}"
 LOG_FILE="${CC_MD_LOG_FILE:-$HOME/.cc-md/sync.log}"
-# ==========================
+ICLOUD_OBSIDIAN="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"
 
 mkdir -p "$(dirname "$LOG_FILE")"
 
@@ -16,13 +19,46 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
 }
 
-# 检查 vault 目录是否存在
-if [ ! -d "$VAULT_DIR" ]; then
-    log "ERROR: Vault directory not found: $VAULT_DIR"
-    exit 1
-fi
+# ---------- 查找 vault ----------
 
-# 检查是否是 Git 仓库
+find_vault() {
+    # 策略 1：环境变量
+    if [ -n "${CC_MD_VAULT_DIR:-}" ] && [ -d "${CC_MD_VAULT_DIR}/.git" ]; then
+        echo "$CC_MD_VAULT_DIR"
+        return
+    fi
+
+    # 策略 2：配置文件
+    if [ -f "$HOME/.cc-md/vault-path" ]; then
+        local saved
+        saved="$(cat "$HOME/.cc-md/vault-path")"
+        if [ -d "$saved/.git" ]; then
+            echo "$saved"
+            return
+        fi
+    fi
+
+    # 策略 3：自动扫描 iCloud 目录，找有 .git 的 vault
+    if [ -d "$ICLOUD_OBSIDIAN" ]; then
+        for dir in "$ICLOUD_OBSIDIAN"/*/; do
+            if [ -d "$dir/.git" ]; then
+                # 找到了，顺便更新配置文件，下次直接命中策略 2
+                echo "$dir" > "$HOME/.cc-md/vault-path"
+                echo "${dir%/}"
+                return
+            fi
+        done
+    fi
+
+    return 1
+}
+
+VAULT_DIR="$(find_vault)" || {
+    log "ERROR: 找不到任何有 .git 的 Obsidian vault"
+    exit 1
+}
+
+# 检查是否是 Git 仓库（双重保险）
 if [ ! -d "$VAULT_DIR/.git" ]; then
     log "ERROR: Not a git repo: $VAULT_DIR"
     exit 1
