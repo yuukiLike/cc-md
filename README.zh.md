@@ -50,52 +50,21 @@ iPhone Obsidian ←─ iCloud ─→ macOS Obsidian ←─ Git ─→ GitHub ←
 
 ## 快速上手
 
-```bash
-# 1. 打开 Obsidian，创建 iCloud vault（名字如 notes）
-# 2. 在 GitHub 上创建私有仓库（如 cc-md-vault）
-# 3. 运行：
-git clone git@github.com:用户名/cc-md.git && cd cc-md && bash scripts/install.sh
-# 4. iPhone 装 Obsidian，打开同一个 iCloud vault
-# 搞定。
-```
-
-## 前提条件
-
-- macOS + [Obsidian](https://obsidian.md)（免费）
-- Git + SSH key 已配置
-- GitHub 上有一个**私有**仓库
-
-## 安装
-
-### 第 1 步：创建 iCloud vault
-
-打开 Obsidian → Create new vault → 存储位置选 iCloud → Create
-
-### 第 2 步：运行安装脚本
+**前提**：Mac 上已安装 Obsidian，并创建了 iCloud vault。
 
 ```bash
-cd cc-md && bash scripts/install.sh
+bash <(curl -sL https://raw.githubusercontent.com/anthropics/cc-md/main/install-remote.sh)
 ```
 
-脚本会问三个问题：
+安装器会自动发现 vault、初始化 Git、连接 GitHub、启动同步。
 
-| 提示 | 输入 |
-|------|------|
-| vault 名称 | 你的 vault 名字，如 `notes` |
-| GitHub 远程仓库 URL | `git@github.com:用户名/仓库.git` |
-| 是否立即推送 | `y` |
+- **1 个 vault + `gh` CLI + SSH key** → 零提示，全自动
+- **1 个 vault + SSH key，无 `gh`** → 1 个提示（贴 repo URL）
+- **无 SSH key** → 明确告诉怎么修，re-run 即恢复
 
-### 第 3 步：配置 iOS
+**iPhone**：装 Obsidian → 打开同一个 iCloud vault，搞定。
 
-iPhone 装 Obsidian → 打开同一个 iCloud vault → 完成。
-
-### 第 4 步：配置 Windows（可选）
-
-```bash
-git clone git@github.com:用户名/仓库.git
-```
-
-用 Obsidian 打开 clone 下来的目录。推荐装 [obsidian-git](https://github.com/denolehov/obsidian-git) 插件自动同步。
+**Windows**（可选）：`git clone` 你的仓库，用 Obsidian 打开。推荐装 [obsidian-git](https://github.com/denolehov/obsidian-git) 自动同步。
 
 ## 验证
 
@@ -142,7 +111,7 @@ md doctor               # 健康检查，逐项诊断
 md sync                 # 立即手动同步
 md log                  # 查看最近 20 条同步日志
 md log 50               # 查看最近 50 条
-md init                 # 引导式初始化（重新运行安装流程）
+md setup                # 智能安装（幂等，已完成的步骤自动跳过）
 ```
 
 **改了 vault 名字？** 不需要任何操作。sync.sh 会自动扫描 iCloud 目录，找到有 `.git` 的 vault。
@@ -170,14 +139,17 @@ bash tests/run.sh
 ```
 cc-md/
 ├── scripts/
-│   ├── cc-md               # CLI 客户端（md status/doctor/sync/log/init）
-│   ├── install.sh          # 安装
+│   ├── cc-md               # CLI 客户端（md status/doctor/sync/log/setup）
+│   ├── setup.sh            # 智能安装器（幂等，8 个阶段）
+│   ├── install.sh          # 向后兼容包装 → setup.sh
 │   ├── uninstall.sh        # 卸载
 │   └── sync.sh             # 自动同步（每 5 分钟）
 ├── tests/
 │   ├── run.sh              # 测试运行器
 │   ├── test_cc-md.sh       # CLI 测试
-│   └── test_sync.sh        # 同步逻辑测试
+│   ├── test_sync.sh        # 同步逻辑测试
+│   └── test_setup.sh       # 安装逻辑测试
+├── install-remote.sh       # curl 一键安装入口
 ├── com.cc-md.sync.plist    # launchd 任务模板
 ├── LICENSE
 ├── README.md               # English

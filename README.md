@@ -50,52 +50,21 @@ iPhone Obsidian ←─ iCloud ─→ macOS Obsidian ←─ Git ─→ GitHub ←
 
 ## Quick Start
 
-```bash
-# 1. Open Obsidian, create an iCloud vault (e.g. "notes")
-# 2. Create a private repo on GitHub (e.g. "cc-md-vault")
-# 3. Run:
-git clone git@github.com:yourname/cc-md.git && cd cc-md && bash scripts/install.sh
-# 4. Install Obsidian on iPhone, open the same iCloud vault
-# Done.
-```
-
-## Prerequisites
-
-- macOS + [Obsidian](https://obsidian.md) (free)
-- Git + SSH key configured
-- A **private** GitHub repo
-
-## Installation
-
-### Step 1: Create iCloud vault
-
-Open Obsidian → Create new vault → Choose iCloud for storage → Create
-
-### Step 2: Run install script
+**Prerequisite**: Obsidian with an iCloud vault on your Mac.
 
 ```bash
-cd cc-md && bash scripts/install.sh
+bash <(curl -sL https://raw.githubusercontent.com/anthropics/cc-md/main/install-remote.sh)
 ```
 
-The script will ask three questions:
+The installer will find your vault, set up Git, connect to GitHub, and start syncing.
 
-| Prompt | Input |
-|--------|-------|
-| Vault name | Your vault name, e.g. `notes` |
-| GitHub remote URL | `git@github.com:yourname/repo.git` |
-| Push now? | `y` |
+- **1 vault + `gh` CLI + SSH key** → zero prompts, fully automatic
+- **1 vault + SSH key, no `gh`** → 1 prompt (paste repo URL)
+- **No SSH key** → tells you exactly how to fix it
 
-### Step 3: Set up iOS
+**iPhone**: Install Obsidian → open the same iCloud vault. Done.
 
-Install Obsidian on iPhone → Open the same iCloud vault → Done.
-
-### Step 4: Set up Windows (optional)
-
-```bash
-git clone git@github.com:yourname/repo.git
-```
-
-Open the cloned directory with Obsidian. Recommend installing [obsidian-git](https://github.com/denolehov/obsidian-git) plugin for auto-sync.
+**Windows** (optional): `git clone` your repo and open with Obsidian. Recommend [obsidian-git](https://github.com/denolehov/obsidian-git) for auto-sync.
 
 ## Verify
 
@@ -142,7 +111,7 @@ md doctor               # health check, diagnose issues
 md sync                 # manual sync now
 md log                  # view last 20 log entries
 md log 50               # view last 50 log entries
-md init                 # guided setup (re-run install)
+md setup                # smart setup (idempotent, skips completed steps)
 ```
 
 **Vault renamed?** No action needed. sync.sh auto-discovers the vault by scanning for `.git` in the iCloud Obsidian directory.
@@ -170,14 +139,17 @@ Pure bash test suite, zero dependencies. Run it after any change to `scripts/`. 
 ```
 cc-md/
 ├── scripts/
-│   ├── cc-md               # CLI client (md status/doctor/sync/log/init)
-│   ├── install.sh          # install
+│   ├── cc-md               # CLI client (md status/doctor/sync/log/setup)
+│   ├── setup.sh            # smart installer (idempotent, 8 phases)
+│   ├── install.sh          # backward-compat wrapper → setup.sh
 │   ├── uninstall.sh        # uninstall
 │   └── sync.sh             # auto-sync (every 5 min)
 ├── tests/
 │   ├── run.sh              # test runner
 │   ├── test_cc-md.sh       # CLI tests
-│   └── test_sync.sh        # sync logic tests
+│   ├── test_sync.sh        # sync logic tests
+│   └── test_setup.sh       # setup logic tests
+├── install-remote.sh       # curl one-liner entry point
 ├── com.cc-md.sync.plist    # launchd job template
 ├── LICENSE
 ├── README.md               # English

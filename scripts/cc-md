@@ -220,8 +220,12 @@ cmd_doctor() {
     fi
 }
 
+cmd_setup() {
+    exec bash "$SCRIPT_DIR/setup.sh"
+}
+
 cmd_init() {
-    exec bash "$SCRIPT_DIR/install.sh"
+    exec bash "$SCRIPT_DIR/setup.sh"
 }
 
 cmd_help() {
@@ -239,7 +243,8 @@ Mac ↔ iOS 走 iCloud，Mac ↔ GitHub 走 Git，每 5 分钟自动执行。
   log [N]         查看同步日志，N 为行数（默认 20）
   sync            立即执行一次前台同步（不等 5 分钟定时器）
   doctor          健康检查，逐项诊断 9 个检查点
-  init            引导式初始化（重新运行 install.sh 安装流程）
+  setup           智能安装/重新配置（幂等，已完成的步骤自动跳过）
+  init            同 setup
   help            显示本帮助信息
 
 status 输出示例:
@@ -283,6 +288,7 @@ case "${1:-status}" in
     log)     cmd_log "${2:-}" ;;
     sync)    cmd_sync ;;
     doctor)  cmd_doctor ;;
+    setup)   cmd_setup ;;
     init)    cmd_init ;;
     help|--help|-h)  cmd_help ;;
     *)
